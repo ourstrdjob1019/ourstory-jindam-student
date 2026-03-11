@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>취중진담 - 카드 요약 (반응형)</title>
+
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #050508;
+            --text-color: #ffffff;
+            --accent-cyan: #00f3ff;
+            --font-main: 'Pretendard', sans-serif;
+            --font-display: 'Black Han Sans', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        /* Background Texture */
+        .bg-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, #1a1a2e 0%, #000000 100%);
+            opacity: 0.6;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .content {
+            width: 100%;
+            max-width: 1200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .section-title { 
+            font-size: 3.5rem; 
+            margin-bottom: 2.5rem; 
+            text-transform: uppercase; 
+            color: #fff; 
+            border-bottom: 5px solid #ff0055; 
+            padding-bottom: 10px;
+            text-align: center;
+        }
+
+        /* 데스크탑 기본: 3열 그리드 */
+        .category-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 40px;
+            width: 100%;
+        }
+
+        .category-col {
+            background: rgba(20, 20, 30, 0.6);
+            padding: 2.5rem 1.5rem;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .card {
+            width: 160px;
+            height: 220px;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-green { background: #2ecc71; color: #fff; border: 3px solid #66ff99; }
+        .card-yellow { background: #f1c40f; color: #222; border: 3px solid #ffeb3b; }
+        .card-red { background: #e74c3c; color: #fff; border: 3px solid #ff7675; }
+
+        .card-icon { font-size: 4.5rem; margin-bottom: 0.5rem; }
+        .card-title { font-size: 2rem; font-weight: 800; text-align: center; word-break: keep-all; }
+
+        .keyword-list { list-style: none; text-align: left; width: 100%; }
+        .keyword-list li {
+            font-size: 1.5rem; 
+            margin-bottom: 1rem;
+            padding-left: 2rem;
+            position: relative;
+            line-height: 1.4;
+            color: #ddd;
+            font-weight: 600;
+        }
+
+        .keyword-list li::before { 
+            content: '✔'; 
+            position: absolute; 
+            left: 0; 
+            top: 2px; 
+            font-size: 1.5rem; 
+            font-weight: bold; 
+        }
+        .green-list li::before { color: #2ecc71; }
+        .yellow-list li::before { color: #f1c40f; }
+        .red-list li::before { color: #e74c3c; }
+
+        /* 인디케이터 기본 숨김 (PC용) */
+        .slider-indicators {
+            display: none;
+        }
+
+        /* ==========================================
+           모바일 반응형 (가로 스와이프 및 인디케이터)
+           ========================================== */
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 2.2rem;
+                margin-bottom: 1.5rem;
+            }
+
+            .category-container {
+                display: flex; 
+                overflow-x: auto; 
+                scroll-snap-type: x mandatory; 
+                gap: 20px;
+                padding-bottom: 20px; 
+                -webkit-overflow-scrolling: touch; 
+                width: 100vw;
+                padding-left: 20px;
+                padding-right: 20px;
+                scroll-behavior: smooth;
+            }
+
+            /* 스크롤바 숨기기 */
+            .category-container::-webkit-scrollbar {
+                display: none;
+            }
+            .category-container {
+                -ms-overflow-style: none; 
+                scrollbar-width: none; 
+            }
+
+            .category-col {
+                flex: 0 0 80%; 
+                scroll-snap-align: center; 
+            }
+
+            /* 인디케이터 스타일링 (모바일용) */
+            .slider-indicators {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 8px;
+                margin-top: 10px;
+                width: 100%;
+            }
+
+            .dot {
+                width: 8px;
+                height: 8px;
+                background-color: rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                transition: all 0.3s ease;
+            }
+
+            /* 활성화된 점의 스타일 (길어지고 밝아짐) */
+            .dot.active {
+                width: 24px;
+                border-radius: 4px;
+                background-color: var(--accent-cyan);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-overlay"></div>
+
+    <div class="content">
+        <h2 class="section-title">카드 종류 핵심 요약</h2>
+        
+        <div class="category-container" id="scrollContainer">
+            <div class="category-col card-item">
+                <div class="card card-green">
+                    <span class="card-icon">🏢</span>
+                    <span class="card-title">중소기업</span> 
+                </div>
+                <ul class="keyword-list green-list">
+                    <li>유연한 근무환경</li>
+                    <li>빠른 의사결정</li>
+                    <li>다양한 직무경험</li>
+                    <li>업무의 전문성</li>
+                    <li>다양한 지원/혜택</li>
+                    <li>빠른 승진 & 인정</li>
+                </ul>
+            </div>
+            
+            <div class="category-col card-item">
+                <div class="card card-yellow">
+                    <span class="card-icon">🎓</span>
+                    <span class="card-title">선취업 후진학</span>
+                </div>
+                <ul class="keyword-list yellow-list">
+                    <li>경제적 안정</li>
+                    <li>실제 경력 쌓기</li>
+                    <li>실무능력 강화</li>
+                    <li>진로 선택의 확장</li>
+                    <li>인맥/네트워크</li>
+                    <li>재직자 특별전형</li>
+                </ul>
+            </div>
+            
+            <div class="category-col card-item">
+                <div class="card card-red">
+                    <span class="card-icon">❤️</span>
+                    <span class="card-title">취업가치관</span>
+                </div>
+                <ul class="keyword-list red-list">
+                    <li>좋은 복지</li>
+                    <li>대인관계</li>
+                    <li>직무 (하는 일)</li>
+                    <li>공정한 보상</li>
+                    <li>꿈/비전/자아실현</li>
+                    <li>워라밸</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="slider-indicators">
+            <div class="dot active"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('scrollContainer');
+            const dots = document.querySelectorAll('.dot');
+            const cards = document.querySelectorAll('.card-item');
+
+            container.addEventListener('scroll', () => {
+                let closestIndex = 0;
+                let minDistance = Infinity;
+                const containerCenter = window.innerWidth / 2;
+
+                cards.forEach((card, index) => {
+                    // 카드의 현재 위치 계산
+                    const rect = card.getBoundingClientRect();
+                    const cardCenter = rect.left + (rect.width / 2);
+                    
+                    // 화면 중앙과 카드 중앙의 거리 차이 계산
+                    const distance = Math.abs(containerCenter - cardCenter);
+                    
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestIndex = index;
+                    }
+                });
+
+                // 점 활성화 상태 업데이트
+                dots.forEach((dot, index) => {
+                    if (index === closestIndex) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+            });
+        });
+    </script>
+
+<script>
+    // 1. 키보드 단축키 차단 (F12, Ctrl+Shift+I, Ctrl+U 등)
+    document.addEventListener('keydown', function(event) {
+        if (event.keyCode === 123 || // F12
+           (event.ctrlKey && event.shiftKey && event.keyCode === 73) || // Ctrl+Shift+I
+           (event.ctrlKey && event.shiftKey && event.keyCode === 74) || // Ctrl+Shift+J
+           (event.ctrlKey && event.keyCode === 85)) { // Ctrl+U
+            event.preventDefault();
+            event.returnValue = false;
+        }
+    });
+
+    // 2. 개발자 도구 강제 정지 (무한 디버거 덫)
+    setInterval(function() {
+        var before = new Date().getTime();
+        debugger; 
+        var after = new Date().getTime();
+        if (after - before > 100) {
+            document.body.innerHTML = "<h1 style='color:red; text-align:center; margin-top:50px;'>보안 정책에 의해 접근이 차단되었습니다.</h1>";
+        }
+    }, 1000);
+</script>
+    
+
+ <script>
+        // 1. 마우스 우클릭 방지 (contextmenu 이벤트 차단)
+        document.addEventListener('contextmenu', function(event) {
+            event.preventDefault();
+        });
+
+        // 추가 팁: 드래그 및 복사도 방지하고 싶다면 아래 주석을 해제하세요.
+        /*
+        // 2. 텍스트 드래그 방지
+        document.addEventListener('selectstart', function(event) {
+            event.preventDefault();
+        });
+
+        // 3. 복사(Ctrl+C) 방지
+        document.addEventListener('copy', function(event) {
+            event.preventDefault();
+        });
+        */
+    </script>
+
+
+</body>
+</html>
